@@ -17,7 +17,7 @@ $config = file_get_contents($configFile);
 $config = str_replace('DBNAME', 'webgoatphp', $config);
 $config = str_replace('DBUSER', 'webgoatuser', $config);
 $config = str_replace('DBPASS', 'webgoatpass', $config);
-$config = str_replace('LOCALHOSTURL', 'localhost', $config);
+$config = str_replace('LOCALHOSTURL', 'webgoatphp-mysql', $config);
 
 // Write the updated configuration
 file_put_contents($configFile, $config);
@@ -34,14 +34,14 @@ if (file_exists($mysqliAdapterFile)) {
         // Update the mysqli connection to use the Docker service name
         $mysqliContent = preg_replace(
             '/\$this->DB = new \\\\mysqli\s*\(\s*"localhost"\s*,/',
-            '$this->DB = new \\mysqli("mysql",',
+            '$this->DB = new \\mysqli("webgoatphp-mysql",',
             $mysqliContent
         );
 
         // Also handle any other localhost references
         $mysqliContent = preg_replace(
             '/new \\\\mysqli\s*\(\s*"localhost"\s*,/',
-            'new \\mysqli("mysql",',
+            'new \\mysqli("webgoatphp-mysql",',
             $mysqliContent
         );
 
