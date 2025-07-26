@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: webgoatphp
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www
+    environment:
+      - APACHE_RUN_USER=www-data
+      - APACHE_RUN_GROUP=www-data
+    depends_on:
+      - mysql
+    networks:
+      - webgoat-network
+
+  mysql:
+    image: mysql:5.7
+    container_name: webgoatphp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: webgoatphp
+      MYSQL_USER: webgoatuser
+      MYSQL_PASSWORD: webgoatpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - webgoat-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: webgoatphp-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - webgoat-network
+
+volumes:
+  mysql-data:
+
+networks:
+  webgoat-network:
+    driver: bridge

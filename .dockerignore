@@ -1,0 +1,11 @@
+.git
+.gitignore
+.vagrant
+Vagrantfile
+vagrant_bootstrap.sh
+docker-compose.yml
+Dockerfile
+Makefile
+.dockerignore
+*.md
+.DS_Store
