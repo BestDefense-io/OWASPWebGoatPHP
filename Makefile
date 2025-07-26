@@ -36,17 +36,10 @@ clean:
 # Build and start
 start: build up
 
-# Database setup (run after containers are up)
-db-setup:
-	@echo "Setting up database configuration..."
-	@docker-compose exec web sed -i 's/DBNAME/webgoatphp/g' /var/www/app/config/application.php
-	@docker-compose exec web sed -i 's/DBUSER/webgoatuser/g' /var/www/app/config/application.php
-	@docker-compose exec web sed -i 's/DBPASS/webgoatpass/g' /var/www/app/config/application.php
-	@docker-compose exec web sed -i 's/LOCALHOSTURL/localhost/g' /var/www/app/config/application.php
-	@echo "Database configuration updated!"
-
-# Quick setup: build, start, and configure
-setup: start db-setup
+# Quick setup: build and start (DB setup is now automatic)
+setup: start
+	@echo "Waiting for application to initialize..."
+	@sleep 10
 	@echo "Application is ready at http://localhost"
 	@echo "PhpMyAdmin is available at http://localhost:8080"
 

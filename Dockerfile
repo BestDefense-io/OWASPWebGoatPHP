@@ -1,10 +1,11 @@
 FROM php:7.4-apache
 
-# Install required PHP extensions
+# Install required PHP extensions and MySQL client
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 # Install additional packages
 RUN apt-get update && apt-get install -y \
+    default-mysql-client \
     libcurl4-openssl-dev \
     libgd-dev \
     libmcrypt-dev \
@@ -32,6 +33,13 @@ RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/Allo
 # Copy application files
 COPY . /var/www/
 
+# Copy the database configuration fix script
+COPY fix-db-config.php /var/www/fix-db-config.php
+
+# Copy and set up entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www
@@ -40,4 +48,4 @@ WORKDIR /var/www
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["docker-entrypoint.sh"]
