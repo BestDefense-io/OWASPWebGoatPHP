@@ -13,42 +13,19 @@ if (!file_exists($configFile)) {
 // Read the original configuration
 $config = file_get_contents($configFile);
 
-// First, update the basic database parameters
-$config = str_replace('DBNAME', 'webgoatphp', $config);
-$config = str_replace('DBUSER', 'webgoatuser', $config);
-$config = str_replace('DBPASS', 'webgoatpass', $config);
-$config = str_replace('LOCALHOSTURL', 'webgoatphp-mysql', $config);
+// Update the database connection to include the Docker service name as host
+// The DatabaseSetting constructor accepts: ($Adapter, $DatabaseName, $Username, $Password, $Host="localhost", $TablePrefix="jf_")
+$config = preg_replace(
+    '/new\s+\\\\jf\\\\DatabaseSetting\s*\(\s*"mysqli"\s*,\s*"[^"]*"\s*,\s*"[^"]*"\s*,\s*"[^"]*"\s*\)/',
+    'new \\jf\\DatabaseSetting("mysqli", "webgoatphp", "webgoatuser", "webgoatpass", "webgoatphp-mysql")',
+    $config
+);
+
+// Also update LOCALHOSTURL
+$config = str_replace('LOCALHOSTURL', 'localhost', $config);
 
 // Write the updated configuration
 file_put_contents($configFile, $config);
 
-// Now we need to update the mysqli connection to use the Docker service name
-// Look for the mysqli adapter file
-$mysqliAdapterFile = '/var/www/_japp/model/lib/db/adapter/mysqli.php';
-
-if (file_exists($mysqliAdapterFile)) {
-    $mysqliContent = file_get_contents($mysqliAdapterFile);
-
-    // Check if we need to modify the mysqli connection
-    if (strpos($mysqliContent, '$this->DB = new \\mysqli') !== false) {
-        // Update the mysqli connection to use the Docker service name
-        $mysqliContent = preg_replace(
-            '/\$this->DB = new \\\\mysqli\s*\(\s*"localhost"\s*,/',
-            '$this->DB = new \\mysqli("webgoatphp-mysql",',
-            $mysqliContent
-        );
-
-        // Also handle any other localhost references
-        $mysqliContent = preg_replace(
-            '/new \\\\mysqli\s*\(\s*"localhost"\s*,/',
-            'new \\mysqli("webgoatphp-mysql",',
-            $mysqliContent
-        );
-
-        file_put_contents($mysqliAdapterFile, $mysqliContent);
-        echo "Updated mysqli adapter to use 'mysql' as host\n";
-    }
-}
-
 echo "Database configuration updated successfully!\n";
-echo "The application is configured to connect to the MySQL Docker container.\n";
+echo "The application is configured to connect to the MySQL Docker container at host 'webgoatphp-mysql'.\n";
