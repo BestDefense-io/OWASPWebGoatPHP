@@ -1,9 +1,11 @@
 FROM php:5.6-apache
 
-# Install required PHP extensions and MySQL client
-RUN docker-php-ext-install mysqli pdo pdo_mysql mysql
+# Fix for Debian Stretch EOL - use archive repositories
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i '/stretch-updates/d' /etc/apt/sources.list
 
-# Install additional packages
+# Install required PHP extensions and MySQL client
 RUN apt-get update && apt-get install -y \
     mysql-client \
     libcurl4-openssl-dev \
@@ -12,7 +14,7 @@ RUN apt-get update && apt-get install -y \
     libmemcached-dev \
     libsqlite3-dev \
     libxml2-dev \
-    && docker-php-ext-install curl gd mcrypt soap \
+    && docker-php-ext-install mysqli pdo pdo_mysql mysql curl gd mcrypt soap \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules
