@@ -6,7 +6,8 @@ RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
     sed -i '/stretch-updates/d' /etc/apt/sources.list
 
 # Install required PHP extensions and MySQL client
-RUN apt-get update && apt-get install -y \
+# Use --allow-unauthenticated because archive repositories have expired keys
+RUN apt-get update && apt-get install -y --allow-unauthenticated \
     mysql-client \
     libcurl4-openssl-dev \
     libgd-dev \
