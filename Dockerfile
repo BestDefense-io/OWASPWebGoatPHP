@@ -1,20 +1,18 @@
-FROM php:7.4-apache
+FROM php:5.6-apache
 
 # Install required PHP extensions and MySQL client
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN docker-php-ext-install mysqli pdo pdo_mysql mysql
 
 # Install additional packages
 RUN apt-get update && apt-get install -y \
-    default-mysql-client \
+    mysql-client \
     libcurl4-openssl-dev \
     libgd-dev \
     libmcrypt-dev \
     libmemcached-dev \
     libsqlite3-dev \
     libxml2-dev \
-    && docker-php-ext-install curl gd soap \
-    && pecl install mcrypt-1.0.4 \
-    && docker-php-ext-enable mcrypt \
+    && docker-php-ext-install curl gd mcrypt soap \
     && rm -rf /var/lib/apt/lists/*
 
 # Enable Apache modules

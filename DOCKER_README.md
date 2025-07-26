@@ -21,16 +21,23 @@ This repository has been containerized to run easily with Docker and Docker Comp
    ```
 
 3. Access the application:
-    - **Application**: http://localhost
-    - **PhpMyAdmin**: http://localhost:8080
+   - **Application**: http://localhost
+   - **PhpMyAdmin**: http://localhost:8080
 
 ## Services
 
 The Docker setup includes three services:
 
-1. **web**: PHP 7.4 with Apache serving the application on port 80
+1. **web**: PHP 5.6 with Apache serving the application on port 80
 2. **mysql**: MySQL 5.7 database server
 3. **phpmyadmin**: Web interface for database management on port 8080
+
+## Why PHP 5.6?
+
+WebGoatPHP was last updated in 2016 and includes older versions of dependencies (like Doctrine ORM) that are incompatible with modern PHP versions. Using PHP 5.6 ensures:
+- Full compatibility with the application code
+- No need to modify or update dependencies
+- The application runs as originally intended
 
 ## Database Configuration
 
@@ -45,7 +52,7 @@ The script will:
 1. Wait for MySQL to be ready
 2. Update the application configuration to use the correct database host
 3. Create the database if it doesn't exist
-4. Import the initial schema if the database is empty
+4. Import the initial schema if the database is empty (with foreign key checks disabled)
 
 ## Available Commands
 
@@ -60,6 +67,8 @@ If you have Make installed:
 - `make mysql-shell` - Access MySQL shell
 - `make clean` - Remove containers and volumes
 - `make status` - Check container status
+- `make db-init` - Manually initialize database (if automatic fails)
+- `make rebuild` - Clean and rebuild everything from scratch
 
 ## Troubleshooting
 
@@ -72,6 +81,24 @@ If you see a database connection error, the entrypoint script should handle this
 3. Manually run the fix script:
    ```bash
    docker-compose exec web php /var/www/fix-db-config.php
+   ```
+
+### Foreign Key Constraint Errors
+
+If you see "Cannot add foreign key constraint" errors during initialization:
+
+1. This is handled automatically by disabling foreign key checks during import
+2. If it still fails, run manual initialization:
+   ```bash
+   make db-init
+   ```
+3. Or access the MySQL shell and import manually:
+   ```bash
+   make mysql-shell
+   # Then in MySQL:
+   SET FOREIGN_KEY_CHECKS=0;
+   SOURCE /var/www/install/_db/mysqli.schema.sql;
+   SET FOREIGN_KEY_CHECKS=1;
    ```
 
 ### Permission Issues
@@ -88,6 +115,18 @@ If port 80 or 8080 is already in use, modify the port mappings in `docker-compos
 ports:
   - "8081:80"  # Change 80 to 8081 or another available port
 ```
+
+### Complete Reset
+
+If you need to start completely fresh:
+```bash
+make rebuild
+```
+
+This will:
+- Remove all containers and volumes
+- Rebuild the images
+- Start fresh with a new database
 
 ## Development
 
